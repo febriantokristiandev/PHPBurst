@@ -2,29 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use Twig\Environment;
-use Twig\Loader\FilesystemLoader;
+use App\Helpers\ResponseHelper;
 
 class HomeController
 {
-    protected $twig;
+    protected $responseHelper;
 
     public function __construct()
     {
-        $loader = new FilesystemLoader(__DIR__ . '/../../../resources/views');
-        $this->twig = new Environment($loader);
+        $this->responseHelper = new ResponseHelper();
+    }
+
+    public function submit($request, $response)
+    {
+        return $this->responseHelper->json([
+            'success' => true,
+            'data' => 123
+        ]);
     }
 
     public function index($request, $response)
     {
-        $html = $this->twig->render('home.twig', [
+        return $this->responseHelper->view('home.twig', [
             'name' => 'PHPBurst'
         ]);
+    }
 
-        // Menyesuaikan respons untuk Workerman
-        $response['headers']['Content-Type'] = 'text/html';
-        $response['body'] = $html;
-        
-        return $response;
+    public function form($request, $response)
+    {
+        return $this->responseHelper->view('form.twig');
     }
 }

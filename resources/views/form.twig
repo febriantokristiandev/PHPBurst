@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Example</title>
+</head>
+<body>
+    <h1>Form with CSRF Protection</h1>
+<form method="post" action="/submit">
+    {{ csrf() }}
+    <!-- Form fields here -->
+    <button type="submit">Submit</button>
+</form>
+
+
+
+</body>
+</html>
