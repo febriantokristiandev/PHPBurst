@@ -3,27 +3,31 @@
 namespace App\Http;
 
 use App\Http\Pipeline\Pipeline;
+use App\Http\Middleware\StartSessionMiddleware;
+use App\Http\Middleware\CsrfMiddleware;
 
 class MiddlewareQueue
 {
     protected $pipeline;
 
-    public function __construct(array $middleware = [])
+    public function __construct()
     {
-        $this->pipeline = new Pipeline($middleware);
+        // Inisialisasi pipeline dengan daftar middleware
+        $this->pipeline = new Pipeline([
+            // StartSessionMiddleware::class,
+            CsrfMiddleware::class,
+        ]);
     }
 
     public function handle($request, $response, $next)
     {
-        $staticFileExtensions = ['.ico', '.png', '.jpg', '.css', '.js'];
+        $staticFileExtensions = ['ico', 'png', 'jpg', 'css', 'js'];
 
-        $uri = $request['uri'];
-        foreach ($staticFileExtensions as $extension) {
-            if (strpos($uri, $extension) !== false) {
-                return $next($request, $response);
-            }
+        $extension = pathinfo($request['uri'], PATHINFO_EXTENSION);
+        if (in_array($extension, $staticFileExtensions)) {
+            return $next($request, $response);
         }
-
+        
         return $this->pipeline->handle($request, $response, $next);
     }
 }

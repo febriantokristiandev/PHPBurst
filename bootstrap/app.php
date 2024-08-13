@@ -12,19 +12,15 @@ use Workerman\Worker;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use App\Http\MiddlewareQueue;
-use App\Http\Middleware\StartSessionMiddleware;
-use App\Http\Middleware\CsrfMiddleware;
 
 // Load environment variables
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
-// Register Whoops for error handling
 $whoops = new Run;
 $whoops->pushHandler(new PrettyPageHandler);
 $whoops->register();
 
-// Initialize database connection
 $capsule = new Capsule;
 $capsule->addConnection([
     'driver'    => $_ENV['DB_CONNECTION'],
@@ -52,11 +48,7 @@ $twig = new Environment($loader);
 $port = $_ENV['APP_PORT'] ?? 8080;
 $worker = new Worker("http://0.0.0.0:$port");
 
-// Middleware Declarations
-$middlewareQueue = new MiddlewareQueue([
-    StartSessionMiddleware::class,
-    CsrfMiddleware::class,
-]);
+$middlewareQueue = new MiddlewareQueue();
 
 $worker->onMessage = function ($connection, $request) use ($dispatcher, $twig, $middlewareQueue) {
     $_SERVER['REQUEST_METHOD'] = $request->method();
@@ -74,7 +66,7 @@ $worker->onMessage = function ($connection, $request) use ($dispatcher, $twig, $
     $response = [
         'headers' => [],
         'body' => ''
-    ];        
+    ];
 
     $response = $middlewareQueue->handle($serverRequest, $response, function ($request, $response) use ($dispatcher, $twig) {
         
