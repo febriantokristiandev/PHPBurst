@@ -9,7 +9,7 @@ class StartSessionMiddleware
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-
+        
         return $next($request, $response);
     }
 }

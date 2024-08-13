@@ -1,35 +1,35 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\User;
 
-use App\Helpers\ResponseHelper;
-
-class HomeController
+class HomeController extends BaseController
 {
-    protected $responseHelper;
+    public function getDataQueryBuilder() {
+        return $this->db->table('users')->get();
+    }
 
-    public function __construct()
-    {
-        $this->responseHelper = new ResponseHelper();
+    public function getDataORM() {
+        return User::all();
     }
 
     public function submit($request, $response)
     {
-        return $this->responseHelper->json([
+        return $this->res->json([
             'success' => true,
-            'data' => 123
+            'data' => $this->getDataORM()
         ]);
     }
 
-    public function index($request, $response)
+    public function index($request, $response)  
     {
-        return $this->responseHelper->view('home.twig', [
+        return $this->res->view('home.twig', [
             'name' => 'PHPBurst'
         ]);
     }
 
     public function form($request, $response)
     {
-        return $this->responseHelper->view('form.twig');
+        return $this->res->view('form.twig');
     }
 }

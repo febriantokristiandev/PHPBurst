@@ -6,19 +6,10 @@ use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use App\Extensions\Twig\CsrfExtension;
 
-class ResponseHelper
+class CsrfResponseHelper
 {
     protected $twig;
     protected $csrfToken;
-
-    public function __construct()
-    {
-        $this->csrfToken = $this->generateCsrfToken();
-        
-        $loader = new FilesystemLoader(__DIR__ . '/../../resources/views');
-        $this->twig = new Environment($loader);
-        $this->twig->addExtension(new CsrfExtension($this->csrfToken));
-    }
 
     public function json($data)
     {
@@ -30,18 +21,25 @@ class ResponseHelper
 
     public function view($view, $data = [])
     {
+        $this->csrfToken = $this->getCsrf();
+        $loader = new FilesystemLoader(__DIR__ . '/../../resources/views');
+        $this->twig = new Environment($loader);
+        $this->twig->addExtension(new CsrfExtension($this->csrfToken));
+
         $html = $this->twig->render($view, array_merge($data, ['_csrf_token' => $this->csrfToken]));
+        
         return [
             'headers' => ['Content-Type' => 'text/html'],
             'body' => $html,
         ];
     }
 
-    private function generateCsrfToken()
+    private function getCsrf()
     {
-        if (empty($_SESSION['_csrf_token'])) {
-            $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+        if (!empty($_SESSION['_csrf_token'])) {
+            return $_SESSION['_csrf_token'];
         }
-        return $_SESSION['_csrf_token'];
+
+        return 'Csrf not set';
     }
 }

@@ -22,7 +22,6 @@ class Pipeline
             },
             $finalDestination
         );
-
         return $pipeline($request, $response);
     }
 }
