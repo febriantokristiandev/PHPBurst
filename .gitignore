@@ -15,6 +15,3 @@ Thumbs.db      # Windows
 # Temporary files
 *.tmp
 *.cache
-
-# Environment files
-.env
