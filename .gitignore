@@ -4,6 +4,7 @@
 # IDE/editor specific files
 /.idea/       # PHPStorm
 /.vscode/     # Visual Studio Code
+/.vs
 
 # Log files
 *.log
