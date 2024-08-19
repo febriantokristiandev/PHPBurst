@@ -11,17 +11,26 @@ class Pipeline
         $this->middleware = $middleware;
     }
 
+    /**
+     * Handle the request through the pipeline.
+     *
+     * @param  mixed $request
+     * @param  callable $finalDestination
+     * @return mixed
+     */
     public function handle($request, $response, $finalDestination)
     {
-        $pipeline = array_reduce(
+        $stack = array_reduce(
             array_reverse($this->middleware),
             function ($stack, $middleware) {
                 return function ($request, $response) use ($stack, $middleware) {
-                    return (new $middleware)->handle($request, $response, $stack);
+                    $middlewareInstance = new $middleware;
+                    return $middlewareInstance->handle($request, $response, $stack);
                 };
             },
             $finalDestination
         );
-        return $pipeline($request, $response);
+        
+        return $stack($request, $response);
     }
 }

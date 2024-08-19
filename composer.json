@@ -4,13 +4,18 @@
     "type": "project",
     "require": {
         "php": "^8.0",
-        "workerman/workerman": "^4.0",
-        "nikic/fast-route": "^1.3.0",
-        "twig/twig": "^3.5",
-        "illuminate/database": "^8.83",
-        "vlucas/phpdotenv": "^5.6",
+        "defuse/php-encryption": "^2.4",
         "filp/whoops": "^2.15",
-        "predis/predis": "^1.1"
+        "illuminate/database": "^8.83",
+        "laminas/laminas-session": "^2.21",
+        "nikic/fast-route": "^1.3.0",
+        "predis/predis": "^1.1",
+        "symfony/console": "^5.4",
+        "symfony/dependency-injection": "^7.1",
+        "symfony/process": "^7.1",
+        "twig/twig": "^3.5",
+        "vlucas/phpdotenv": "^5.6",
+        "workerman/workerman": "^4.0"
     },
     "autoload": {
         "psr-4": {

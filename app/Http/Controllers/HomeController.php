@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\User;
 
 class HomeController extends BaseController
@@ -13,23 +14,23 @@ class HomeController extends BaseController
         return User::all();
     }
 
-    public function submit($request, $response)
+    public function submit($req, $res)
     {
-        return $this->res->json([
+        return $this->json([
             'success' => true,
             'data' => $this->getDataORM()
         ]);
     }
 
-    public function index($request, $response)  
+    public function index($req, $res)  
     {
-        return $this->res->view('home.twig', [
+        return view('home', [
             'name' => 'PHPBurst'
         ]);
     }
 
     public function form($request, $response)
     {
-        return $this->res->view('form.twig');
+        return view('form');
     }
 }

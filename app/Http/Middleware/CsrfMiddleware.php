@@ -1,21 +1,23 @@
 <?php
+
 namespace App\Http\Middleware;
+
+use Laminas\Session\Container;
 
 class CsrfMiddleware
 {
-    public function __construct()
-    {
-        $this->generateCsrfToken();
-    }
-
-    
     public function handle($request, $response, $next)
     {
+        $session = new Container('csrf');
+
+        if (!$session->offsetExists('_csrf_token')) {
+            $this->generateCsrfToken($session);
+        }
+
         if (in_array($request['method'], ['POST', 'PUT', 'PATCH', 'DELETE'])) {
             $token = $request['body']['_csrf_token'] ?? '';
 
-            if (!hash_equals($_SESSION['_csrf_token'] ?? '', $token)) {
-                error_log("Invalid CSRF token");
+            if (!hash_equals($session->offsetGet('_csrf_token'), $token)) {
                 http_response_code(403);
                 echo "Invalid CSRF token";
                 exit;
@@ -25,12 +27,9 @@ class CsrfMiddleware
         return $next($request, $response);
     }
 
-    private function generateCsrfToken()
+    private function generateCsrfToken($session)
     {
-        if (empty($_SESSION['_csrf_token'])) {
-            $token = bin2hex(random_bytes(32));
-            $_SESSION['_csrf_token'] = $token;
-            
-        }
+        $token = bin2hex(random_bytes(32));
+        $session->offsetSet('_csrf_token', $token);
     }
 }

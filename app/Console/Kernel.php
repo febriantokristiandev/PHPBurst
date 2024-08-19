@@ -5,17 +5,17 @@ namespace App\Console;
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 use FastRoute\Dispatcher;
-use App\Http\Middleware\CsrfMiddleware;
-use App\Http\Middleware\StartSessionMiddleware;
 use App\Http\Pipeline\Pipeline;
 
 class Kernel
 {
     protected $dispatcher;
     protected $middlewareGroups;
+    protected $container; 
 
     public function __construct()
     {
+
         $this->dispatcher = [
             'web' => $this->createDispatcher(__DIR__ . '/../../routes/web.php'),
             'api' => $this->createDispatcher(__DIR__ . '/../../routes/api.php'),
@@ -23,8 +23,8 @@ class Kernel
 
         $this->middlewareGroups = [
             'web' => [
-                StartSessionMiddleware::class, 
-                CsrfMiddleware::class
+                \App\Http\Middleware\StartSessionMiddleware::class,
+                \App\Http\Middleware\CsrfMiddleware::class
             ],
             'api' => [],
         ];
@@ -32,6 +32,7 @@ class Kernel
 
     public function handle($request, $response, $next)
     {
+
         $routeType = $this->getRouteType($request['uri']);
         $routeInfo = $this->dispatcher[$routeType]->dispatch($request['method'], $request['uri']);
 
