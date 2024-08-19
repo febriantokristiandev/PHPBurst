@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Laminas\Session\SessionManager;
+use Laminas\Session\Storage\SessionArrayStorage;
 
 class StartSessionMiddleware
 {
@@ -16,12 +17,12 @@ class StartSessionMiddleware
         }
 
         $this->session = new SessionManager();
+        $this->session->setStorage(new SessionArrayStorage());
         $this->session->start();
 
         $request['session'] = $this->session;
 
         $response = $next($request, $response);
-
         $this->session->writeClose();
 
         return $response;
