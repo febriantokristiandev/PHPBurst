@@ -11,33 +11,26 @@ use App\Console\Kernel;
 use App\Providers\ProviderRegistry;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-// Set up dependency injection container
 $container = new ContainerBuilder();
 $GLOBALS['container'] = $container;
 
-// Load global functions
 require __DIR__ . '/../config/global-functions.php';
 
-// Register providers
 ProviderRegistry::register($container);
 
-// Load environment variables
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
-// Register error handler
 $whoops = new Run;
 $whoops->pushHandler(new PrettyPageHandler);
 $whoops->register();
 
-// Set up database connection
 $config = require __DIR__ . '/../config/database.php';
 $capsule = new Capsule;
 $capsule->addConnection($config['connections'][$config['default']]);
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
-// Configure and run the worker server
 $port = env('APP_PORT') ?? 8080;
 $worker = new Worker("http://0.0.0.0:$port");
 

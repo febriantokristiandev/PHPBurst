@@ -11,11 +11,9 @@ class Kernel
 {
     protected $dispatcher;
     protected $middlewareGroups;
-    protected $container; 
 
     public function __construct()
     {
-
         $this->dispatcher = [
             'web' => $this->createDispatcher(__DIR__ . '/../../routes/web.php'),
             'api' => $this->createDispatcher(__DIR__ . '/../../routes/api.php'),
@@ -24,7 +22,7 @@ class Kernel
         $this->middlewareGroups = [
             'web' => [
                 \App\Http\Middleware\StartSessionMiddleware::class,
-                \App\Http\Middleware\CsrfMiddleware::class
+                \App\Http\Middleware\VerifyCsrfMiddleware::class
             ],
             'api' => [],
         ];
@@ -32,7 +30,6 @@ class Kernel
 
     public function handle($request, $response, $next)
     {
-
         $routeType = $this->getRouteType($request['uri']);
         $routeInfo = $this->dispatcher[$routeType]->dispatch($request['method'], $request['uri']);
 

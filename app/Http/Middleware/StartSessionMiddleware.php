@@ -2,29 +2,21 @@
 
 namespace App\Http\Middleware;
 
-use Laminas\Session\SessionManager;
-use Laminas\Session\Storage\SessionArrayStorage;
+use App\Support\Session\SessionInitializer;
 
 class StartSessionMiddleware
 {
-    private $session;
+    private $sessionInitializer;
+
+    public function __construct()
+    {
+        $this->sessionInitializer = new SessionInitializer();
+    }
 
     public function handle($request, $response, $next)
     {
-        if ($this->session && $this->session->isStarted()) {
-            $request['session'] = $this->session;
-            return $next($request, $response);
-        }
-
-        $this->session = new SessionManager();
-        $this->session->setStorage(new SessionArrayStorage());
-        $this->session->start();
-
-        $request['session'] = $this->session;
-
-        $response = $next($request, $response);
-        $this->session->writeClose();
-
-        return $response;
+        $this->sessionInitializer->initialize();
+        $request['session'] = $this->sessionInitializer->getSession();
+        return $next($request, $response);
     }
 }
