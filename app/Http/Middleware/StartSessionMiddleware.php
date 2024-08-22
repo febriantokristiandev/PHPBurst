@@ -2,21 +2,24 @@
 
 namespace App\Http\Middleware;
 
-use App\Support\Session\SessionInitializer;
-
 class StartSessionMiddleware
 {
-    private $sessionInitializer;
-
-    public function __construct()
-    {
-        $this->sessionInitializer = new SessionInitializer();
-    }
-
     public function handle($request, $response, $next)
     {
-        $this->sessionInitializer->initialize();
-        $request['session'] = $this->sessionInitializer->getSession();
+        global $container;
+        
+        $session = $container->get('session');
+        $segment = $session->getSegment('Vendor\Package\ClassName');
+
+        if (!$segment->get('csrf_token')) {
+            $csrfToken = bin2hex(random_bytes(32));
+            $segment->set('csrf_token', $csrfToken);
+        }
+
+        $request['csrf_token'] = $segment->get('csrf_token');
+
+        print_r($segment->get('csrf_token')); 
+        exit;
         return $next($request, $response);
     }
 }
