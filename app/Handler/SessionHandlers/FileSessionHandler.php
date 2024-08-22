@@ -13,6 +13,7 @@ class FileSessionHandler implements SessionHandlerInterface
         if (!is_dir($path) && !mkdir($path, 0777, true)) {
             throw new \RuntimeException("Unable to create session directory: $path");
         }
+        
         $this->path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 

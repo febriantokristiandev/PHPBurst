@@ -12,7 +12,7 @@ use App\Handler\SessionHandlers\NullSessionHandler;
 use App\Handler\SessionHandlers\MemcachedSessionHandler;
 use App\Handler\SessionHandlers\RedisSessionHandler;
 use Aura\Session\SessionFactory;
-use Aura\Session\Session;
+use Aura\Session\SegmentFactoryInterface;
 
 class SessionProvider
 {
@@ -39,6 +39,8 @@ class SessionProvider
 
         // Create session instance
         $session = $sessionFactory->newInstance($_COOKIE);
+
+        // Configure the session
         $session->setName($config['session_name']);
         
         session_set_cookie_params(

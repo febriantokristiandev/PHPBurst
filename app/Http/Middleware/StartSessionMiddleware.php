@@ -9,6 +9,7 @@ class StartSessionMiddleware
         global $container;
         
         $session = $container->get('session');
+
         $segment = $session->getSegment('Vendor\Package\ClassName');
 
         if (!$segment->get('csrf_token')) {
@@ -18,8 +19,6 @@ class StartSessionMiddleware
 
         $request['csrf_token'] = $segment->get('csrf_token');
 
-        print_r($segment->get('csrf_token')); 
-        exit;
         return $next($request, $response);
     }
 }
