@@ -11,23 +11,21 @@ function base_path($path = '')
 
 function view($template, $data = [])
 {
-
-    //SymfoniDependencyInjection Init
     global $container;
     /** @var ContainerInterface $container */
+    
     $template = $template . '.twig';
     $twig = $container->get('twig');
+    $session = $container->get('session');
 
-    //Laminas Container Init
-    $session = new LaminasContainer('csrf');
+    $csrfToken = $session->getSegment('Vendor\Package\ClassName')->get('csrf_token', null);
 
-
-    $csrfToken = $session->offsetExists('_csrf_token') ? $session->offsetGet('_csrf_token') : null;
-
+    // Add CSRF extension to Twig if not already added
     if (!$twig->hasExtension(CsrfExtension::class)) {
         $twig->addExtension(new CsrfExtension($csrfToken));
     }
 
+    // Render the template with CSRF token
     $html = $twig->render($template, array_merge($data, ['_csrf_token' => $csrfToken]));
 
     return [
