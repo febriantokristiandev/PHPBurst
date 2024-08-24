@@ -34,12 +34,11 @@ class ResponseHandler
         
         $template = $viewName . '.twig';
         $twig = $container->get('twig');
-        var_dump( $session->get('_csrf_token', ''));
-        var_dump( $session->get('_csrf_token'));exit;
+
         if (!$session->has('_csrf_token')) {
-            $csrfToken = $session->get('_csrf_token', '');
-        } else {
             $csrfToken = $tokenNotFound;
+        } else {
+            $csrfToken = $session->get('_csrf_token', '');
         }
 
         if (!$twig->hasExtension(CsrfExtension::class)) {
