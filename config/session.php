@@ -4,7 +4,7 @@ return [
     'driver' => 'file',
 
     'file' => [
-        'path' => '../storage/sessions',  // Directory for storing session files
+        'path' => __DIR__ . '/../storage/sessions',  // Directory for storing session files
     ],
 
     // Configuration for Redis storage

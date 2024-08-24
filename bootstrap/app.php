@@ -1,7 +1,6 @@
 <?php
-
 require __DIR__ . '/../vendor/autoload.php';
-
+//Workerman 
 use Workerman\Worker;
 use Workerman\Protocols\Http\Session;
 use Workerman\Protocols\Http\Session\FileSessionHandler;
@@ -9,57 +8,62 @@ use Workerman\Protocols\Http\Session\RedisSessionHandler;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request;
 use Workerman\Protocols\Http\Response;
-
+//Additional
 use Dotenv\Dotenv;
-
 use Illuminate\Database\Capsule\Manager as Capsule;
-
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Whoops\Run;
 use Whoops\Handler\PrettyPageHandler;
-
+//Internal
 use App\Console\Kernel;
 use App\Providers\ProviderRegistry;
 use Flareon\Support\Facades\Facade;
 
 
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
+//Init Symfony Container
 $container = new ContainerBuilder();
 $GLOBALS['container'] = $container;
 
+//Load globa funcs
 require __DIR__ . '/../config/global-functions.php';
 
+//Init Dotenv
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
+//Init Whoops
 $whoops = new Run;
 $whoops->pushHandler(new PrettyPageHandler);
 $whoops->register();
 
+//Config DB
 $config = require base_path('config/database.php');
 $capsule = new Capsule;
 $capsule->addConnection($config['connections'][$config['default']]);
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
+//Obj Init
 $port = env('APP_PORT') ?? 8080;
-
 $worker = new Worker("http://0.0.0.0:$port");
 $kernel = new Kernel();
 
 // Configure session handling based on the configuration
-$config = require base_path('config/session.php');
-$sessionDriver = $config['driver'];
+$sessConfig = require base_path('config/session.php');
+$sessionDriver = $sessConfig['driver'];
+var_dump($sessionDriver);
 if ($sessionDriver === 'file') {
-    FileSessionHandler::sessionSavePath($config['file']['path']);
+    FileSessionHandler::sessionSavePath($sessConfig['file']['path']);
 } elseif ($sessionDriver === 'redis') {
-    $redisConfig = $config['redis'];
+    $redisConfig = $sessConfig['redis'];
     Session::handlerClass(RedisSessionHandler::class, $redisConfig);
 }
 
+//Load Provider and Facades
 ProviderRegistry::register($container);
 Facade::setContainer($container);
 
+//Main func
 $worker->onMessage = function (TcpConnection $connection, Request $request) use ($kernel) {
     $uri = $request->uri();
     $publicPath = __DIR__ . '/../public';

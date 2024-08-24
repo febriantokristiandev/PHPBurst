@@ -2,7 +2,6 @@
 
 namespace Flareon\Handlers\Http;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Extensions\Twig\CsrfExtension;
 use Workerman\Protocols\Http\Response;
 use Flareon\Support\Facades\TwigFacade;
@@ -24,31 +23,24 @@ class ResponseHandler
     // Simulated View Response
     public function view($viewName, $data = [])
     {
-
-        $errorSessionUndefined = "Please provide request param in the response() function, e.g., response(request).";
-        $tokenNotFound = "token undefined";
-
         $session = $this->request->session();
-
-        global $container;
-        /** @var ContainerInterface $container */
-        
         $template = $viewName . '.twig';
+        $html = '';
 
         if (!$session->has('_csrf_token')) {
-            $csrfToken = $tokenNotFound;
+            $html = TwigFacade::render($template);
+            return new Response(200, ['Content-Type' => 'text/html'], $html);
         } else {
             $csrfToken = $session->get('_csrf_token', '');
-        }
+            if (!TwigFacade::hasExtension(CsrfExtension::class)) {
+                TwigFacade::addExtension(new CsrfExtension($csrfToken));
+                $html = TwigFacade::render($template, array_merge($data, ['_csrf_token' => $csrfToken]));
+            }
+            $response = new Response(200, ['Content-Type' => 'text/html'], $html);
+            $response->cookie('XSRF-TOKEN',$csrfToken);
+            return $response;
+        } 
 
-        if (!TwigFacade::hasExtension(CsrfExtension::class)) {
-            TwigFacade::addExtension(new CsrfExtension($csrfToken));
-        }
-
-        $html = TwigFacade::render($template, array_merge($data, ['_csrf_token' => $csrfToken]));
-
-        
-        return new Response(200, ['Content-Type' => 'text/html'], $html);
     }
 
     // JSON Response
@@ -143,16 +135,6 @@ class ResponseHandler
     public function withHeaders(array $headers)
     {
         $this->headers = array_merge($this->headers, $headers);
-        return new Response($this->status, $this->headers, $this->body);
-    }
-
-    // Response with Cookies
-    public function withCookies(array $cookies)
-    {
-        foreach ($cookies as $name => $value) {
-            $this->cookies[] = "$name=$value";
-        }
-        $this->headers['Set-Cookie'] = implode('; ', $this->cookies);
         return new Response($this->status, $this->headers, $this->body);
     }
 
