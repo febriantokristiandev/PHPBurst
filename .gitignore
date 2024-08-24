@@ -6,7 +6,7 @@
 /.vscode/     # Visual Studio Code
 /.vs
 
-/storage/framework/sessions/
+/storage/sessions/
 
 # Log files
 *.log
