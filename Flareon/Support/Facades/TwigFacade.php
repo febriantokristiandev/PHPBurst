@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Facades;
+namespace Flareon\Support\Facades;
 
 use Twig\Environment;
 

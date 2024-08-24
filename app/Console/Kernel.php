@@ -3,8 +3,8 @@
 namespace App\Console;
 
 use FastRoute\RouteCollector;
-use function FastRoute\simpleDispatcher;
 use FastRoute\Dispatcher;
+use function FastRoute\simpleDispatcher;
 use App\Http\Pipeline\Pipeline;
 
 class Kernel
@@ -14,34 +14,38 @@ class Kernel
 
     public function __construct()
     {
+        // Initialize route dispatchers for web and API routes
         $this->dispatcher = [
             'web' => $this->createDispatcher(__DIR__ . '/../../routes/web.php'),
             'api' => $this->createDispatcher(__DIR__ . '/../../routes/api.php'),
         ];
 
+        // Define middleware groups for different route types
         $this->middlewareGroups = [
             'web' => [
-                \App\Http\Middleware\StartSessionMiddleware::class,
+                \App\Http\Middleware\SessionInit::class,
                 \App\Http\Middleware\VerifyCsrfMiddleware::class
             ],
             'api' => [],
         ];
     }
 
-    public function handle($request, $response, $next)
+    public function handle($request, $next)
     {
-        $routeType = $this->getRouteType($request['uri']);
-        $routeInfo = $this->dispatcher[$routeType]->dispatch($request['method'], $request['uri']);
-
+        // Determine route type (web or api) based on URI
+        $routeType = $this->getRouteType($request->uri());
+        $routeInfo = $this->dispatcher[$routeType]->dispatch($request->method(), $request->uri());
+    
+        // Handle route based on the dispatcher result
         switch ($routeInfo[0]) {
             case Dispatcher::NOT_FOUND:
-                return $this->handleNotFound($response);
+                return $this->handleNotFound();
             case Dispatcher::METHOD_NOT_ALLOWED:
-                return $this->handleMethodNotAllowed($response);
+                return $this->handleMethodNotAllowed();
             case Dispatcher::FOUND:
-                return $this->handleFound($routeInfo, $request, $response, $routeType);
+                return $this->handleFound($routeInfo, $request, $routeType);
             default:
-                return $response;
+                return $this->handleNotFound();
         }
     }
 
@@ -63,43 +67,48 @@ class Kernel
         return $this->middlewareGroups[$routeType];
     }
 
-    protected function handleNotFound($response)
+    protected function handleNotFound()
     {
-        return $this->createResponse($response, '404 Not Found', 'text/html');
+        return $this->createResponse('404 Not Found', 404, 'text/html');
     }
 
-    protected function handleMethodNotAllowed($response)
+    protected function handleMethodNotAllowed()
     {
-        return $this->createResponse($response, '405 Method Not Allowed', 'text/plain');
+        return $this->createResponse('405 Method Not Allowed', 405, 'text/plain');
     }
 
-    protected function handleFound($routeInfo, $request, $response, $routeType)
+    protected function handleFound($routeInfo, $request, $routeType)
     {
+        
         [$class, $method] = explode('::', $routeInfo[1]);
 
         if (!class_exists($class) || !method_exists($class, $method)) {
-            return $this->handleError($response);
+            return $this->handleError();
         }
 
         $controller = new $class();
         $middleware = $this->getMiddlewareForRoute($routeType);
 
         $pipeline = new Pipeline($middleware);
-        
-        return $pipeline->handle($request, $response, function ($req, $res) use ($controller, $method) {
-            return $controller->$method($req, $res);
+
+        return $pipeline->handle($request, function ($req) use ($controller, $method) {
+            return $controller->$method($req);
         });
     }
 
-    protected function handleError($response)
+    protected function handleError()
     {
-        return $this->createResponse($response, '500 Internal Server Error', 'text/plain');
+        return $this->createResponse('500 Internal Server Error', 500, 'text/plain');
     }
 
-    protected function createResponse($response, $body, $contentType)
+    protected function createResponse($body, $status,$contentType)
     {
-        $response['headers']['Content-Type'] = $contentType;
-        $response['body'] = $body;
+
+        $response = response();
+        $headers = ['Content-Type' => $contentType];
+
+        $response->custom($body,$status,$headers);
+
         return $response;
     }
 }

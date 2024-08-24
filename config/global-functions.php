@@ -16,9 +16,8 @@ function view($template, $data = [])
     
     $template = $template . '.twig';
     $twig = $container->get('twig');
-    $session = $container->get('session');
 
-    $csrfToken = $session->getSegment('Vendor\Package\ClassName')->get('csrf_token', null);
+    $csrfToken = 555;
 
     // Add CSRF extension to Twig if not already added
     if (!$twig->hasExtension(CsrfExtension::class)) {

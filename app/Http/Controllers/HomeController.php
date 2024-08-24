@@ -14,23 +14,24 @@ class HomeController extends BaseController
         return User::all();
     }
 
-    public function submit($req, $res)
+    public function submit($req)
     {
-        return $this->json([
+        return response()->json([ 
             'success' => true,
             'data' => $this->getDataORM()
         ]);
     }
 
-    public function index($req, $res)  
+    public function index($req)  
     {
-        return view('home', [
+        return response()->view('home', [
             'name' => 'PHPBurst'
         ]);
     }
 
-    public function form($request, $response)
+    public function form($req)
     {
-        return view('form');
+        
+        return response($req)->view('form');
     }
 }
