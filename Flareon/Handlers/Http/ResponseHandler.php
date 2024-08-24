@@ -28,17 +28,14 @@ class ResponseHandler
         $tokenNotFound = "token undefined";
 
         $session = $this->request->session();
-        // if ($this->request) {
-        // } else {
-        //     $session = null; 
-        // }
 
         global $container;
         /** @var ContainerInterface $container */
         
         $template = $viewName . '.twig';
         $twig = $container->get('twig');
-
+        var_dump( $session->get('_csrf_token', ''));
+        var_dump( $session->get('_csrf_token'));exit;
         if (!$session->has('_csrf_token')) {
             $csrfToken = $session->get('_csrf_token', '');
         } else {
