@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 
-class HomeController extends BaseController
+use App\Models\User;
+use Flareon\Support\Facades\DB;
+
+class HomeController 
 {
     public function getDataQueryBuilder() {
-        return $this->db->table('users')->get();
+        return DB::table('users')->get();
     }
 
     public function getDataORM() {
@@ -18,7 +20,7 @@ class HomeController extends BaseController
     {
         return response()->json([ 
             'success' => true,
-            'data' => $this->getDataORM()
+            'data' => $this->getDataQueryBuilder()
         ]);
     }
 

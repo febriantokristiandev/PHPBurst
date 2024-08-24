@@ -2,10 +2,10 @@
 
 namespace Flareon\Support\Facades;
 
-class TwigFacade extends Facade
+class DB extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'twig';
+        return 'db'; 
     }
 }

@@ -20,7 +20,15 @@ abstract class Facade
 
     public static function __callStatic($method, $arguments)
     {
+        if (static::$container === null) {
+            throw new \Exception('Container not set.');
+        }
+
         $instance = static::$container->get(static::getFacadeAccessor());
+        if ($instance === null) {
+            throw new \Exception('No instance found for ' . static::getFacadeAccessor());
+        }
+
         return $instance->$method(...$arguments);
     }
 }

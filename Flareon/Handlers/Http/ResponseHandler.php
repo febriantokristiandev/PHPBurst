@@ -5,6 +5,7 @@ namespace Flareon\Handlers\Http;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Extensions\Twig\CsrfExtension;
 use Workerman\Protocols\Http\Response;
+use Flareon\Support\Facades\TwigFacade;
 
 class ResponseHandler
 {
@@ -33,7 +34,6 @@ class ResponseHandler
         /** @var ContainerInterface $container */
         
         $template = $viewName . '.twig';
-        $twig = $container->get('twig');
 
         if (!$session->has('_csrf_token')) {
             $csrfToken = $tokenNotFound;
@@ -41,11 +41,11 @@ class ResponseHandler
             $csrfToken = $session->get('_csrf_token', '');
         }
 
-        if (!$twig->hasExtension(CsrfExtension::class)) {
-            $twig->addExtension(new CsrfExtension($csrfToken));
+        if (!TwigFacade::hasExtension(CsrfExtension::class)) {
+            TwigFacade::addExtension(new CsrfExtension($csrfToken));
         }
 
-        $html = $twig->render($template, array_merge($data, ['_csrf_token' => $csrfToken]));
+        $html = TwigFacade::render($template, array_merge($data, ['_csrf_token' => $csrfToken]));
 
         
         return new Response(200, ['Content-Type' => 'text/html'], $html);

@@ -19,6 +19,8 @@ use Whoops\Handler\PrettyPageHandler;
 
 use App\Console\Kernel;
 use App\Providers\ProviderRegistry;
+use Flareon\Support\Facades\Facade;
+
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -26,8 +28,6 @@ $container = new ContainerBuilder();
 $GLOBALS['container'] = $container;
 
 require __DIR__ . '/../config/global-functions.php';
-
-ProviderRegistry::register($container);
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
@@ -56,6 +56,9 @@ if ($sessionDriver === 'file') {
     $redisConfig = $config['redis'];
     Session::handlerClass(RedisSessionHandler::class, $redisConfig);
 }
+
+ProviderRegistry::register($container);
+Facade::setContainer($container);
 
 $worker->onMessage = function (TcpConnection $connection, Request $request) use ($kernel) {
     $uri = $request->uri();
