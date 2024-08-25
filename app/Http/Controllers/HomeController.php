@@ -32,7 +32,6 @@ class HomeController
 
     public function form($req)
     {
-        
-        return response($req)->view('form');
+        return response($req)->view('form')->cookie('test',123);
     }
 }

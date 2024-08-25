@@ -1,7 +1,7 @@
 <?php
-use Flareon\Handlers\Http\ResponseHandler;
+use Flareon\Handlers\Http\ResponseHelper;
 
 function response($request = null)
 {
-    return new ResponseHandler($request);
+    return new ResponseHelper($request);
 }

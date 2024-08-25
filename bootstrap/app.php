@@ -51,7 +51,7 @@ $kernel = new Kernel();
 // Configure session handling based on the configuration
 $sessConfig = require base_path('config/session.php');
 $sessionDriver = $sessConfig['driver'];
-var_dump($sessionDriver);
+
 if ($sessionDriver === 'file') {
     FileSessionHandler::sessionSavePath($sessConfig['file']['path']);
 } elseif ($sessionDriver === 'redis') {
