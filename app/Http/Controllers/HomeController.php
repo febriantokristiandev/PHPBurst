@@ -26,12 +26,12 @@ class HomeController
     public function index($req)  
     {
         return response()->view('home', [
-            'name' => 'PHPBurst'
+            'name' => 'World'
         ]);
     }
 
     public function form($req)
     {
-        return response($req)->view('form')->cookie('test',123);
+        return response($req)->view('form');
     }
 }
