@@ -20,60 +20,37 @@ class ResponseHelper
         $this->request = $req;
     }
 
-    // Simulated View Response
     public function view($viewName, $data = [])
     {
-        $session = $this->request->session();
         $template = $viewName . '.twig';
-        $html = '';
+        
+        $html = TwigFacade::render($template, $data);
 
-        if (!$session->has('_csrf_token')) {
-            $html = TwigFacade::render($template);
+        if (!$this->request) {
             return new Response(200, ['Content-Type' => 'text/html'], $html);
-        } else {
-            $csrfToken = $session->get('_csrf_token', '');
+        }
+
+        if (!method_exists($this->request, 'session') || !$this->request->session()) {
+            return new Response(200, ['Content-Type' => 'text/html'], $html);
+        }
+
+        //Session available
+
+        $session = $this->request->session();
+        $csrfToken = $session->has('_csrf_token') ? $session->get('_csrf_token', '') : null;
+
+        if ($csrfToken !== null) {
             if (!TwigFacade::hasExtension(CsrfExtension::class)) {
                 TwigFacade::addExtension(new CsrfExtension($csrfToken));
-                $html = TwigFacade::render($template, array_merge($data, ['_csrf_token' => $csrfToken]));
             }
+            $html = TwigFacade::render($template, array_merge($data, ['_csrf_token' => $csrfToken]));
             $response = new Response(200, ['Content-Type' => 'text/html'], $html);
-            $response->cookie('XSRF-TOKEN',$csrfToken);
+            $response->cookie('XSRF-TOKEN', $csrfToken);
             return $response;
-        } 
-
-    }
-
-    public function view($viewName, $data = [])
-{
-    $template = $viewName . '.twig';
-    
-    $html = TwigFacade::render($template);
-
-    if (!$this->request) {
-        return new Response(200, ['Content-Type' => 'text/html'], $html);
-    }
-
-    if (!method_exists($this->request, 'session') || !$this->request->session()) {
-        return new Response(200, ['Content-Type' => 'text/html'], $html);
-    }
-
-    //Session available
-
-    $session = $this->request->session();
-    $csrfToken = $session->has('_csrf_token') ? $session->get('_csrf_token', '') : null;
-
-    if ($csrfToken !== null) {
-        if (!TwigFacade::hasExtension(CsrfExtension::class)) {
-            TwigFacade::addExtension(new CsrfExtension($csrfToken));
         }
-        $html = TwigFacade::render($template, array_merge($data, ['_csrf_token' => $csrfToken]));
-        $response = new Response(200, ['Content-Type' => 'text/html'], $html);
-        $response->cookie('XSRF-TOKEN', $csrfToken);
-        return $response;
+        
+        return new Response(200, ['Content-Type' => 'text/html'], $html);
     }
-    
-    return new Response(200, ['Content-Type' => 'text/html'], $html);
-}
 
 
     // JSON Response

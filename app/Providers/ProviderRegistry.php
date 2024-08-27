@@ -12,6 +12,7 @@ class ProviderRegistry
     {
         TwigProvider::register($container);
         DbProvider::register($container);
+        LogProvider::register($container);
 
         // Add more providers if needed
     }

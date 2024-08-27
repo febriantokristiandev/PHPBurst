@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
+
 //Workerman 
 use Workerman\Worker;
 use Workerman\Protocols\Http\Session;
@@ -12,13 +13,10 @@ use Workerman\Protocols\Http\Response;
 use Dotenv\Dotenv;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Whoops\Run;
-use Whoops\Handler\PrettyPageHandler;
 //Internal
 use App\Console\Kernel;
 use App\Providers\ProviderRegistry;
 use Flareon\Support\Facades\Facade;
-
 
 //Init Symfony Container
 $container = new ContainerBuilder();
@@ -30,11 +28,6 @@ require __DIR__ . '/../config/global-functions.php';
 //Init Dotenv
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
-
-//Init Whoops
-$whoops = new Run;
-$whoops->pushHandler(new PrettyPageHandler);
-$whoops->register();
 
 //Config DB
 $config = require base_path('config/database.php');
@@ -65,42 +58,52 @@ Facade::setContainer($container);
 
 //Main func
 $worker->onMessage = function (TcpConnection $connection, Request $request) use ($kernel) {
-    $uri = $request->uri();
-    $publicPath = __DIR__ . '/../public';
-    $filePath = $publicPath . $uri;
+    try {
+        $uri = $request->uri();
+        $publicPath = __DIR__ . '/../public';
+        $filePath = $publicPath . $uri;
 
-    static $staticExtensions = [
-        '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg','.woff', '.woff2', '.ttf', '.eot','.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
-        '.webp', '.bmp', '.tiff', '.tif', '.mp4', '.webm', '.ogg', '.mp3','.zip', '.tar', '.gz', '.bz2','.json', '.xml', '.yaml', '.yml'
-    ];
+        static $staticExtensions = [
+            '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg','.woff', '.woff2', '.ttf', '.eot','.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+            '.webp', '.bmp', '.tiff', '.tif', '.mp4', '.webm', '.ogg', '.mp3','.zip', '.tar', '.gz', '.bz2','.json', '.xml', '.yaml', '.yml'
+        ];
 
-    $extension = strtolower(pathinfo($uri, PATHINFO_EXTENSION));
-    $extension = $extension ? '.' . $extension : '';
+        $extension = strtolower(pathinfo($uri, PATHINFO_EXTENSION));
+        $extension = $extension ? '.' . $extension : '';
 
-    if (in_array($extension, $staticExtensions)) {
-        if (file_exists($filePath)) {
-            $fileContent = file_get_contents($filePath);
-            $mimeType = mime_content_type($filePath);
+        if (in_array($extension, $staticExtensions)) {
+            if (file_exists($filePath)) {
+                $fileContent = file_get_contents($filePath);
+                $mimeType = mime_content_type($filePath);
 
-            $response = new Response(
-                200,
-                ['Content-Type' => $mimeType, 'Content-Length' => strlen($fileContent)],
-                $fileContent
-            );
-            $connection->send($response);
-            return;
-        } else {
-            $response = new Response(404, [], 'File not found');
-            $connection->send($response);
-            return;
+                $response = new Response(
+                    200,
+                    ['Content-Type' => $mimeType, 'Content-Length' => strlen($fileContent)],
+                    $fileContent
+                );
+                $connection->send($response);
+                return;
+            } else {
+                $response = new Response(404, [], 'File not found');
+                $connection->send($response);
+                return;
+            }
         }
-    }
-    
-    $kernelResponse = $kernel->handle($request, function ($request, $response) {
-        return $response;
-    });
+        
+        $kernelResponse = $kernel->handle($request, function ($request, $response) {
+            return $response;
+        });
 
-    $connection->send($kernelResponse);
+        $connection->send($kernelResponse);
+    } catch (\Throwable $e) {
+        $logger = $GLOBALS['container']->get('logger');
+
+        $logger->error($e);
+
+        $response = new Response(500, ['Content-Type' => 'text/html'], $e);
+        $connection->send($response);
+    }
 };
+
 
 Worker::runAll();

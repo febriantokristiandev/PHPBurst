@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Flareon\Support\Facades\DB;
+use Flareon\Support\Facades\Log;
 
 class HomeController 
 {
@@ -25,8 +26,10 @@ class HomeController
 
     public function index($req)  
     {
+        Log::info('Menampilkan halaman index123.');
+
         return response()->view('home', [
-            'name' => 'World'
+            'name' => 'PHPBurst'
         ]);
     }
 
