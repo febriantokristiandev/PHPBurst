@@ -5,7 +5,14 @@
 /.idea/       # PHPStorm
 /.vscode/     # Visual Studio Code
 /.vs
-/.storage/
+
+# Ignore all files in storage/logs and storage/sessions directories
+storage/logs/*
+storage/sessions/*
+
+# But keep the directories
+!storage/logs/
+!storage/sessions/
 
 # Log files
 *.log
