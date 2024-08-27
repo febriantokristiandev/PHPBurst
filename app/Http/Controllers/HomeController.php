@@ -26,8 +26,6 @@ class HomeController
 
     public function index($req)  
     {
-        Log::info('Menampilkan halaman index123.');
-
         return response()->view('home', [
             'name' => 'PHPBurst'
         ]);

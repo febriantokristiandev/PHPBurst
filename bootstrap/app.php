@@ -44,7 +44,6 @@ $kernel = new Kernel();
 // Configure session handling based on the configuration
 $sessConfig = require base_path('config/session.php');
 $sessionDriver = $sessConfig['driver'];
-
 if ($sessionDriver === 'file') {
     FileSessionHandler::sessionSavePath($sessConfig['file']['path']);
 } elseif ($sessionDriver === 'redis') {
@@ -55,6 +54,16 @@ if ($sessionDriver === 'file') {
 //Load Provider and Facades
 ProviderRegistry::register($container);
 Facade::setContainer($container);
+
+$worker->onWorkerStart = function(Worker $worker)
+{
+    echo "Worker starting...\n";
+};
+
+$worker->onConnect = function(TcpConnection $connection)
+{
+    echo "new connection from ip " . $connection->getRemoteIp() . "\n";
+};
 
 //Main func
 $worker->onMessage = function (TcpConnection $connection, Request $request) use ($kernel) {
@@ -89,11 +98,11 @@ $worker->onMessage = function (TcpConnection $connection, Request $request) use 
                 return;
             }
         }
-        
+
         $kernelResponse = $kernel->handle($request, function ($request, $response) {
             return $response;
         });
-
+        
         $connection->send($kernelResponse);
     } catch (\Throwable $e) {
         $logger = $GLOBALS['container']->get('logger');
@@ -105,5 +114,24 @@ $worker->onMessage = function (TcpConnection $connection, Request $request) use 
     }
 };
 
+$worker->onBufferDrain = function(TcpConnection $connection)
+{
+    echo "buffer drain and continue send\n";
+};
+
+$worker->onBufferFull = function(TcpConnection $connection)
+{
+    echo "bufferFull and do not send again\n";
+};
+
+$worker->onError = function(TcpConnection $connection, $code, $msg)
+{
+    echo "error $code $msg\n";
+};
+
+$worker->onClose = function(TcpConnection $connection)
+{
+    echo "connection closed\n";
+};
 
 Worker::runAll();
