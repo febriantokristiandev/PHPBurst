@@ -5,7 +5,6 @@
 /.idea/       # PHPStorm
 /.vscode/     # Visual Studio Code
 /.vs
-
 /.storage/
 
 # Log files
